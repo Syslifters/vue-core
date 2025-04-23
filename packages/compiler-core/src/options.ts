@@ -53,6 +53,10 @@ export interface ParserOptions
    */
   isPreTag?: (tag: string) => boolean
   /**
+   * e.g. elements that contain raw text instead of nested elements
+   */
+  isRawTextTag?: (tag: string) => boolean
+  /**
    * Elements that should ignore the first newline token per parinsg spec
    * e.g. `<textarea>` and `<pre>`
    */

@@ -72,6 +72,7 @@ export const defaultParserOptions: MergedParserOptions = {
   getNamespace: () => Namespaces.HTML,
   isVoidTag: NO,
   isPreTag: NO,
+  isRawTextTag: NO,
   isIgnoreNewlineTag: NO,
   isCustomElement: NO,
   onError: defaultOnError,
@@ -578,6 +579,11 @@ function endOpenTag(end: number) {
   if (ns === Namespaces.HTML && currentOptions.isPreTag(tag)) {
     inPre++
   }
+  if (ns === Namespaces.HTML && currentOptions.isRawTextTag(tag)) {
+    tokenizer.inRCDATA = true
+    tokenizer.currentSequence = toCharCodes('</' + tag)
+    tokenizer.sequenceIndex = 0
+  }
   if (currentOptions.isVoidTag(tag)) {
     onCloseTag(currentOpenTag!, end)
   } else {
@@ -592,7 +598,12 @@ function endOpenTag(end: number) {
 function onText(content: string, start: number, end: number) {
   if (__BROWSER__) {
     const tag = stack[0] && stack[0].tag
-    if (tag !== 'script' && tag !== 'style' && content.includes('&')) {
+    if (
+      tag !== 'script' &&
+      tag !== 'style' &&
+      !currentOptions.isRawTextTag(tag) &&
+      content.includes('&')
+    ) {
       content = currentOptions.decodeEntities!(content, false)
     }
   }
